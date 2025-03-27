@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Book, ReadingLog, User } from './types';
+import { Book, ReadingLog, ReadingStatus, User } from './types';
 
 // User-related functions
 export const signUp = async (email: string, password: string): Promise<User> => {
@@ -133,7 +133,11 @@ export const getUserReadingLogs = async (userId: string): Promise<ReadingLog[]> 
     throw error;
   }
   
-  return data || [];
+  // Ensure status is of type ReadingStatus
+  return (data || []).map(log => ({
+    ...log,
+    status: log.status as ReadingStatus
+  }));
 };
 
 export const addToReadingLog = async (logData: Omit<ReadingLog, 'id'>): Promise<ReadingLog> => {
@@ -168,7 +172,11 @@ export const addToReadingLog = async (logData: Omit<ReadingLog, 'id'>): Promise<
     throw response.error;
   }
   
-  return response.data;
+  // Ensure status is of type ReadingStatus
+  return {
+    ...response.data,
+    status: response.data.status as ReadingStatus
+  };
 };
 
 export const updateReadingLog = async (id: string, logData: Partial<ReadingLog>): Promise<ReadingLog> => {
@@ -183,7 +191,11 @@ export const updateReadingLog = async (id: string, logData: Partial<ReadingLog>)
     throw error;
   }
   
-  return data;
+  // Ensure status is of type ReadingStatus
+  return {
+    ...data,
+    status: data.status as ReadingStatus
+  };
 };
 
 export const getReadingLogForBook = async (userId: string, bookId: string): Promise<ReadingLog | null> => {
@@ -198,7 +210,13 @@ export const getReadingLogForBook = async (userId: string, bookId: string): Prom
     throw error;
   }
   
-  return data;
+  if (!data) return null;
+  
+  // Ensure status is of type ReadingStatus
+  return {
+    ...data,
+    status: data.status as ReadingStatus
+  };
 };
 
 export const getUserBooksWithStatus = async (userId: string): Promise<any[]> => {
@@ -214,5 +232,9 @@ export const getUserBooksWithStatus = async (userId: string): Promise<any[]> => 
     throw error;
   }
   
-  return data || [];
+  // Ensure status is of type ReadingStatus for each reading log
+  return (data || []).map(item => ({
+    ...item,
+    status: item.status as ReadingStatus
+  }));
 };
