@@ -59,9 +59,13 @@ const ReadingLogForm = ({ bookId, existingLog, onSuccess }: ReadingLogFormProps)
     
     try {
       const logData = {
-        ...values,
+        status: values.status, // Explicitly include status to ensure it's not optional
         user_id: user.id,
         book_id: bookId,
+        rating: values.rating,
+        start_date: values.start_date || undefined,
+        finish_date: values.finish_date || undefined,
+        notes: values.notes || undefined,
       };
       
       let result;

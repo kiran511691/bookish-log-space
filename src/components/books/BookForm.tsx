@@ -42,9 +42,10 @@ const BookForm = ({ initialData, onSuccess }: BookFormProps) => {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      // Filter out empty strings for optional fields
+      // Filter out empty strings for optional fields but ensure title and author are included
       const bookData = {
-        ...values,
+        title: values.title, // Ensure title is explicitly included
+        author: values.author, // Ensure author is explicitly included
         genre: values.genre || undefined,
         cover_image_url: values.cover_image_url || undefined,
         publication_year: values.publication_year || undefined,
