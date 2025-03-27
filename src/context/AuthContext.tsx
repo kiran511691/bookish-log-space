@@ -2,8 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@/utils/types';
-import { getCurrentUser, login, logout, signUp } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -21,17 +21,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const currentUser = getCurrentUser();
-    setUser(currentUser);
-    setIsLoading(false);
+    // First set up the auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            name: session.user.user_metadata?.name
+          });
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email!,
+          name: session.user.user_metadata?.name
+        });
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogin = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const user = await login(email, password);
-      setUser(user);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) throw error;
+      
       toast({
         title: "Login successful",
         description: "Welcome back to your reading nook!",
@@ -52,8 +84,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleSignup = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const user = await signUp(email, password);
-      setUser(user);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+      
+      if (error) throw error;
+      
       toast({
         title: "Account created",
         description: "Welcome to My Reading Nook!",
@@ -73,8 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      setUser(null);
+      await supabase.auth.signOut();
       toast({
         title: "Logged out",
         description: "You have been logged out successfully",
