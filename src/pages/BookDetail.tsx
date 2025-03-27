@@ -92,7 +92,7 @@ const BookDetail = () => {
       
       <div className="flex flex-col md:flex-row gap-8">
         <div className="w-full md:w-1/3 lg:w-1/4">
-          <div className="sticky top-24 book-cover rounded-lg overflow-hidden border border-border">
+          <div className="sticky top-24 rounded-lg overflow-hidden border border-border bg-muted">
             <img 
               src={book.cover_image_url || defaultCoverUrl} 
               alt={`Cover of ${book.title}`}

@@ -15,11 +15,11 @@ const BookCard = ({ book, showStatus = true }: BookCardProps) => {
   return (
     <div className="book-card group animate-fade-in">
       <Link to={`/book/${book.id}`} className="block">
-        <div className="book-cover">
+        <div className="book-cover relative rounded-lg overflow-hidden aspect-[2/3] bg-muted">
           <img 
             src={book.cover_image_url || defaultCoverUrl} 
             alt={`Cover of ${book.title}`}
-            className="book-cover-img"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
             onError={(e) => {
               (e.target as HTMLImageElement).src = defaultCoverUrl;
